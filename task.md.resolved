@@ -1,0 +1,15 @@
+# Task: Build AI Text Intelligence Web
+
+- `[/]` Backend
+  - `[ ]` `utils/preprocessing.py`
+  - `[ ]` `modules/song_interpreter.py`
+  - `[ ]` `modules/poetry_meter.py`
+  - `[ ]` `modules/summarizer.py`
+  - `[ ]` `app.py` (Flask API)
+  - `[ ]` `requirements.txt`
+- `[ ]` Frontend
+  - `[ ]` `index.html`
+  - `[ ]` `css/style.css`
+  - `[ ]` `js/app.js`
+- `[ ]` README.md
+- `[ ]` Verify — run and test
