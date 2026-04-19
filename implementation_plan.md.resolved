@@ -1,0 +1,102 @@
+# AI Text Intelligence Web — New Full-Stack Project
+
+Build a brand new project at `d:\NLP project\ai-text-intelligence-web\` using the **same NLP concepts** as the existing Streamlit project, but with a modern HTML/CSS/JS frontend + Flask API backend.
+
+> [!IMPORTANT]
+> The existing `ai-text-intelligence` project will NOT be touched.
+
+## Proposed Architecture
+
+```
+ai-text-intelligence-web/
+├── backend/
+│   ├── app.py                  ← Flask API server
+│   ├── requirements.txt        ← Python dependencies
+│   ├── modules/
+│   │   ├── song_interpreter.py ← Song meaning analysis (same logic)
+│   │   ├── poetry_meter.py     ← Poetry meter checker (same logic)
+│   │   └── summarizer.py       ← Text summarizer (same logic, no Streamlit)
+│   └── utils/
+│       └── preprocessing.py    ← Text preprocessing (same logic)
+├── frontend/
+│   ├── index.html              ← Main page
+│   ├── css/
+│   │   └── style.css           ← All styling (dark theme, glassmorphism, animations)
+│   └── js/
+│       └── app.js              ← Frontend logic (API calls, DOM manipulation)
+└── README.md
+```
+
+## Proposed Changes
+
+---
+
+### Backend (Flask API)
+
+#### [NEW] `backend/app.py`
+- Flask server with 3 API endpoints:
+  - `POST /api/interpret` → Song meaning interpreter
+  - `POST /api/meter` → Poetry meter checker
+  - `POST /api/summarize` → Text summarizer
+- CORS enabled for frontend communication
+- JSON request/response format
+
+#### [NEW] `backend/modules/song_interpreter.py`
+- Same logic as existing: VADER sentiment + keyword theme detection
+- No Streamlit dependency
+
+#### [NEW] `backend/modules/poetry_meter.py` 
+- Same logic as existing: CMU dict stress analysis, meter detection, rhyme scheme
+- No Streamlit dependency
+
+#### [NEW] `backend/modules/summarizer.py`
+- Same logic as existing: DistilBART model for summarization  
+- **Removed `@st.cache_resource`** → replaced with a simple module-level singleton
+
+#### [NEW] `backend/utils/preprocessing.py`
+- Identical to existing: clean → tokenize → remove stopwords pipeline
+
+#### [NEW] `backend/requirements.txt`
+- flask, flask-cors, nltk, transformers, torch
+
+---
+
+### Frontend (HTML/CSS/JS)
+
+#### [NEW] `frontend/index.html`
+- Single-page app with 3 navigation tabs (Song, Poetry, Summarize)
+- Semantic HTML5 structure
+- Google Fonts (Inter)
+
+#### [NEW] `frontend/css/style.css`
+- Dark theme with purple/blue gradient accents
+- Glassmorphism cards
+- Smooth micro-animations (hover effects, loading spinners, fade-ins)
+- Fully responsive layout
+- Keyword badges, result cards matching existing design aesthetic
+
+#### [NEW] `frontend/js/app.js`
+- Tab switching logic
+- `fetch()` calls to Flask API endpoints
+- Loading states, error handling
+- Dynamic DOM rendering of results (emotion, theme, stress patterns, summary)
+
+---
+
+### Documentation
+
+#### [NEW] `README.md`
+- Project overview, setup instructions, API documentation
+
+## User Review Required
+
+> [!IMPORTANT]  
+> **Text Summarizer uses a large AI model (~1.2GB download).** The DistilBART model will be downloaded on first use. This is the same behavior as your existing project. Should I keep it, or would you prefer to skip the summarizer in this new project?
+
+## Verification Plan
+
+### Manual Verification
+1. Start Flask backend: `python backend/app.py`
+2. Open `frontend/index.html` in browser
+3. Test all 3 features with sample inputs
+4. Verify responsive design at different screen sizes
