@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Text Intelligence</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>🧠 AI Text Intelligence Platform</h1>
+
+    <div class="container">
+
+        <!-- Song -->
+        <div class="card">
+            <h2>🎵 Song Interpreter</h2>
+            <textarea id="songInput" placeholder="Enter lyrics..."></textarea>
+            <button onclick="analyzeSong()">Analyze</button>
+            <pre id="songResult"></pre>
+        </div>
+
+        <!-- Poetry -->
+        <div class="card">
+            <h2>✍️ Poetry Meter</h2>
+            <textarea id="poemInput" placeholder="Enter poem..."></textarea>
+            <button onclick="analyzeMeter()">Check Meter</button>
+            <pre id="meterResult"></pre>
+        </div>
+
+        <!-- Summary -->
+        <div class="card">
+            <h2>📝 Summarizer</h2>
+            <textarea id="textInput" placeholder="Enter text..."></textarea>
+            <button onclick="summarizeText()">Summarize</button>
+            <pre id="summaryResult"></pre>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
