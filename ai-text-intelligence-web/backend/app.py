@@ -4,8 +4,11 @@ from flask import Flask, request, jsonify
 from modules.song_interpreter import interpret_song
 from modules.poetry_meter import analyze_meter
 from modules.summarizer import summarize_text
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 
 # -------------------------------
 # 1. Song Meaning API
