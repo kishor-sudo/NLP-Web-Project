@@ -17,7 +17,7 @@ model_name = "sshleifer/distilbart-cnn-12-6"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-def summarize_text(long_text: str, summarizer) -> str:
+def summarize_text(long_text: str) -> str:
     """
     Generates a concise summary for the input text.
     """
@@ -31,7 +31,7 @@ def summarize_text(long_text: str, summarizer) -> str:
     max_len = min(130, max(20, input_length // 2))
     min_len = min(30, max(10, input_length // 4))
 
-    tokenizer, model = summarizer
+    #tokenizer, model = summarizer
     
     # Tokenize input
     inputs = tokenizer([long_text], max_length=1024, return_tensors="pt", truncation=True)
