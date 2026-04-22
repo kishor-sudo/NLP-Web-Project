@@ -171,11 +171,27 @@ FOOT_COUNT_NAMES = {
 # ---------------------------------------------------------------------------
 # 6. Non-overlapping pattern matching + scoring  (Improvements #1 & #2)
 # ---------------------------------------------------------------------------
+#def _score_meter_for_line(stress: list, meter_name: str, pattern: list) -> float:
+    #"""
+    #Score how well `stress` matches `pattern` using non-overlapping chunking.
+    #Returns a ratio 0.0 – 1.0 representing the fraction of feet that match.
+    #"""
+    #foot_len = len(pattern)
+    #if len(stress) < foot_len:
+    #    return 0.0
+
+    #total_feet = len(stress) // foot_len
+    #if total_feet == 0:
+    #    return 0.0
+
+    #matching_feet = 0
+    #for i in range(total_feet):
+    #    chunk = stress[i * foot_len : (i + 1) * foot_len]
+    #    if chunk == pattern:
+    #        matching_feet += 1
+
+    #return matching_feet / total_feet
 def _score_meter_for_line(stress: list, meter_name: str, pattern: list) -> float:
-    """
-    Score how well `stress` matches `pattern` using non-overlapping chunking.
-    Returns a ratio 0.0 – 1.0 representing the fraction of feet that match.
-    """
     foot_len = len(pattern)
     if len(stress) < foot_len:
         return 0.0
@@ -184,13 +200,19 @@ def _score_meter_for_line(stress: list, meter_name: str, pattern: list) -> float
     if total_feet == 0:
         return 0.0
 
-    matching_feet = 0
+    total_score = 0
+    comparisons = 0
+
     for i in range(total_feet):
         chunk = stress[i * foot_len : (i + 1) * foot_len]
-        if chunk == pattern:
-            matching_feet += 1
 
-    return matching_feet / total_feet
+        for j in range(len(pattern)):
+            if j < len(chunk):
+                comparisons += 1
+                if chunk[j] == pattern[j]:
+                    total_score += 1
+
+    return total_score / comparisons if comparisons > 0 else 0.0
 
 
 def _detect_line_meter(stress: list) -> tuple:
@@ -218,13 +240,34 @@ def _detect_line_meter(stress: list) -> tuple:
 # ---------------------------------------------------------------------------
 # 7. Rhyme scheme detection  (Improvement #7)
 # ---------------------------------------------------------------------------
-def _last_phonemes(word: str, n: int = 3) -> tuple | None:
-    """Return the last `n` phonemes of a word (from CMU dict) for rhyme comparison."""
+#def _last_phonemes(word: str, n: int = 3) -> tuple | None:
+    #"""Return the last `n` phonemes of a word (from CMU dict) for rhyme comparison."""
+    #word_lower = word.lower().strip()
+    #if word_lower in cmudict:
+    #    phonemes = cmudict[word_lower][0]
+    #    return tuple(phonemes[-n:]) if len(phonemes) >= n else tuple(phonemes)
+    #return None
+    
+def _last_phonemes(word: str):
     word_lower = word.lower().strip()
+
     if word_lower in cmudict:
         phonemes = cmudict[word_lower][0]
-        return tuple(phonemes[-n:]) if len(phonemes) >= n else tuple(phonemes)
+
+        # Find last stressed vowel
+        for i in range(len(phonemes) - 1, -1, -1):
+            if any(char.isdigit() for char in phonemes[i]):
+                # Return from stressed vowel to end
+                return tuple(phonemes[i:])
+
     return None
+
+def _phoneme_match(p1, p2):
+    if p1 is None or p2 is None:
+        return False
+
+    # Allow partial match (last sound)
+    return p1[-1] == p2[-1]
 
 
 def _detect_rhyme_scheme(lines: list) -> str:
@@ -256,7 +299,8 @@ def _detect_rhyme_scheme(lines: list) -> str:
         # Check if we already have a matching ending
         matched = False
         for known_phoneme, letter in phoneme_to_letter.items():
-            if ending == known_phoneme:
+            #if ending == known_phoneme:
+            if _phoneme_match(ending, known_phoneme):
                 scheme.append(letter)
                 matched = True
                 break
@@ -352,10 +396,12 @@ def analyze_meter(poem_text: str) -> dict:
     rhyme_scheme = _detect_rhyme_scheme(lines)
 
     # --- Explanation ---
-    explanation = (
-        f"The dominant stress pattern is **{full_meter_name}** "
-        f"({confidence.lower()} confidence, {vote_ratio:.0%} of lines agree). "
-        f"Rhyme scheme: **{rhyme_scheme}**."
+    explanation = generate_detailed_explanation(
+    full_meter_name,
+    confidence,
+    rhyme_scheme,
+    foot_count_name,
+    vote_ratio
     )
 
     return {
@@ -366,6 +412,46 @@ def analyze_meter(poem_text: str) -> dict:
         "rhyme_scheme": rhyme_scheme,
         "foot_count_name": foot_count_name,
     }
+    
+def generate_detailed_explanation(meter, confidence, rhyme_scheme, foot_name, vote_ratio):
+    if meter in ("Unknown", "Free Verse / Irregular"):
+        return (
+            "The poem does not follow a strict metrical pattern. "
+            "It is likely written in free verse, allowing flexible rhythm and structure."
+        )
+
+    # Meter meaning
+    meter_meaning = {
+        "Iambic": "an unstressed followed by a stressed syllable (da-DUM)",
+        "Trochaic": "a stressed followed by an unstressed syllable (DUM-da)",
+        "Anapestic": "two unstressed followed by a stressed syllable (da-da-DUM)",
+        "Dactylic": "a stressed followed by two unstressed syllables (DUM-da-da)"
+    }
+
+    base_meter = meter.split()[0]
+
+    explanation = f"The poem is primarily written in {meter}. "
+
+    if base_meter in meter_meaning:
+        explanation += f"This means each foot follows {meter_meaning[base_meter]}. "
+
+    explanation += f"It consists of {foot_name.lower()}, indicating the number of rhythmic units per line. "
+
+    # Confidence explanation
+    if confidence == "High":
+        explanation += "The rhythm is very consistent across the lines, showing strong metrical structure. "
+    elif confidence == "Medium":
+        explanation += "The rhythm is somewhat consistent, with a few variations across lines. "
+    else:
+        explanation += "The rhythm varies significantly, suggesting irregular or mixed meter. "
+
+    # Rhyme explanation
+    if rhyme_scheme and rhyme_scheme != "N/A":
+        explanation += f"The rhyme scheme '{rhyme_scheme}' indicates a structured pattern of end rhymes. "
+
+    explanation += f"Approximately {int(vote_ratio*100)}% of lines follow this pattern."
+
+    return explanation
 
 
 # ---------------------------------------------------------------------------

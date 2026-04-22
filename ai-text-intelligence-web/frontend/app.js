@@ -33,10 +33,11 @@ async function analyzeMeter() {
     
     const data = await res.json();
     document.getElementById("meterResult").innerHTML = `
-<b>Meter:</b> ${data.meter_type}<br>
-<b>Confidence:</b> ${data.confidence}<br>
-<b>Rhyme Scheme:</b> ${data.rhyme_scheme}
-`;
+            <b>Meter:</b> ${data.meter_type}<br>
+            <b>Confidence:</b> ${data.confidence}<br>
+            <b>Rhyme Scheme:</b> ${data.rhyme_scheme}<br><br>
+            ${data.explanation}
+            `;
 }
 
 // SUMMARY
