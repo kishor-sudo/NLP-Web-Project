@@ -36,11 +36,28 @@ def analyze_vader_emotion(text: str) -> str:
         return "Negative / Melancholic"
     else:
         return "Highly Negative / Angsty"
+    
+def correct_emotion(emotion: str, themes: list) -> str:
 
-def detect_theme(tokens: list) -> str:
-    """
-    Detects the primary theme of the lyrics based on keyword overlaps.
-    """
+    # Motivation fix
+    if "Motivation & Resilience" in themes and "Negative" in emotion:
+        return "Positive / Uplifting"
+
+    # Sadness fix
+    if "Heartbreak & Sadness" in themes and "Highly Negative" in emotion:
+        return "Negative / Melancholic"
+
+    # 🎯 NEW: Nostalgia override (VERY IMPORTANT)
+    if "Nostalgia & Memories" in themes:
+        return "Neutral / Reflective"
+
+    # Happiness override
+    if "Happiness & Celebration" in themes:
+        return "Highly Positive / Joyful"
+
+    return emotion
+
+def detect_themes(tokens: list) -> list:
     theme_scores = Counter()
     
     for token in tokens:
@@ -49,11 +66,13 @@ def detect_theme(tokens: list) -> str:
                 theme_scores[theme] += 1
                 
     if not theme_scores:
-        return "General / Ambiguous"
+        return ["General / Ambiguous"]
     
-    # Return the theme with highest score
-    primary_theme = theme_scores.most_common(1)[0][0]
-    return primary_theme
+    if "Nostalgia & Memories" in theme_scores:
+        return ["Nostalgia & Memories"]
+    
+    # Return top 2 themes
+    return [theme for theme, _ in theme_scores.most_common(2)]
 
 def interpret_song(lyrics: str) -> dict:
     """
@@ -72,30 +91,77 @@ def interpret_song(lyrics: str) -> dict:
     if not tokens:
         return {
             "emotion": "Unknown",
-            "theme": "Unknown",
+            "themes": ["Unknown"],
             "meaning_explanation": "The lyrics provided are too short or contain mostly filler words to interpret."
         }
     
     emotion = analyze_vader_emotion(lyrics)
-    theme = detect_theme(tokens)
+    themes = detect_themes(tokens)
+    emotion = analyze_vader_emotion(lyrics)
+    emotion = correct_emotion(emotion, themes)
     
     # Extract top 5 words for explanation
     word_counts = Counter(tokens)
     top_words = [word for word, count in word_counts.most_common(5)]
     
-    explanation = (
-        f"This song carries a **{emotion.lower()}** vibe. "
-        f"Based on the lyrical content, its primary theme seems to be **{theme}**. "
-        f"The recurring use of words like {', '.join([f'*{w}*' for w in top_words])} "
-        f"suggests that the artist is focusing heavily on these concepts to convey their message."
-    )
+    explanation = generate_explanation(emotion, themes, top_words)
     
     return {
-        "emotion": emotion,
-        "theme": theme,
-        "meaning_explanation": explanation,
-        "top_keywords": top_words
+    "emotion": emotion,
+    "themes": themes,
+    "meaning_explanation": explanation,
+    "top_keywords": top_words
     }
+    
+def generate_explanation(emotion, themes, top_words):
+    explanation = ""
+
+    # Emotional tone
+    explanation += f"This song expresses a **{emotion.lower()}** emotional tone. "
+
+    # Theme blending
+    if len(themes) > 1:
+        explanation += f"It combines themes of **{themes[0]}** and **{themes[1]}**, "
+    else:
+        explanation += f"It mainly focuses on **{themes[0]}**, "
+
+    # Keyword reasoning
+    explanation += (
+        f"with words like {', '.join([f'*{w}*' for w in top_words])} "
+        f"highlighting the central ideas. "
+    )
+
+    # Contrast detection (IMPORTANT 🔥)
+    if "Love & Romance" in themes and "Heartbreak & Sadness" in themes:
+        explanation += (
+            "This contrast suggests a complex emotional state where love and pain coexist, "
+            "indicating a bittersweet or conflicted experience. "
+        )
+
+    # Motivation interpretation
+    if "Motivation & Resilience" in themes:
+        explanation += (
+            "The presence of challenge-related words indicates struggle, "
+            "while positive expressions suggest determination and personal growth. "
+        )
+
+    # Nostalgia interpretation
+    if "Nostalgia & Memories" in themes:
+        explanation += (
+            "The lyrics focus on past experiences and memories, "
+            "creating a reflective and sentimental mood rather than pure happiness. "
+        )
+
+    # Emotional intensity
+    if "Highly" in emotion:
+        explanation += "The emotional intensity is strong, making the message more impactful. "
+    else:
+        explanation += "The emotional tone is moderate, giving a reflective feel. "
+
+    # Final summary
+    explanation += "Overall, the song conveys its message through emotional depth and lyrical emphasis."
+
+    return explanation
 
 if __name__ == "__main__":
     sample_lyrics = "I will always love you, my heart will go on forever. Even when we say goodbye, I won't cry."

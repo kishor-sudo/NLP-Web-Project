@@ -15,7 +15,7 @@ async function analyzeSong() {
     const data = await res.json();
     document.getElementById("songResult").innerHTML = `
                                     <b>Emotion:</b> ${data.emotion}<br>
-                                    <b>Theme:</b> ${data.theme}<br><br>
+                                    <b>Themes:</b> ${data.themes.join(", ")}<br><br>
                                     ${data.meaning_explanation}`;
 }
 
