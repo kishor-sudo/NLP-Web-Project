@@ -14,9 +14,19 @@ async function analyzeSong() {
 
     const data = await res.json();
     document.getElementById("songResult").innerHTML = `
-                                    <b>Emotion:</b> ${data.emotion}<br>
-                                    <b>Theme:</b> ${data.theme}<br><br>
-                                    ${data.meaning_explanation}`;
+                                    <div class="analysis-item">
+                                        <span class="label">Emotion</span>
+                                        <span class="value">${data.emotion}</span>
+                                    </div>
+
+                                    <div class="analysis-item">
+                                        <span class="label">Themes</span>
+                                        <span class="value">${data.themes.join(", ")}</span>
+                                    </div>
+
+                                    <div class="explanation-box">
+                                        ${data.meaning_explanation}
+                                    </div>`;
 }
 
 // POETRY
@@ -33,10 +43,26 @@ async function analyzeMeter() {
     
     const data = await res.json();
     document.getElementById("meterResult").innerHTML = `
-            <b>Meter:</b> ${data.meter_type}<br>
-            <b>Confidence:</b> ${data.confidence}<br>
-            <b>Rhyme Scheme:</b> ${data.rhyme_scheme}<br><br>
-            ${data.explanation}
+                                                <div class="analysis-item">
+                                                    <span class="label">Meter</span>
+                                                    <span class="value">${data.meter_type}</span>
+                                                </div>
+
+                                                <div class="analysis-item">
+                                                    <span class="label">Confidence</span>
+                                                    <span class="badge ${data.confidence.toLowerCase()}">
+                                                        ${data.confidence}
+                                                    </span>
+                                                </div>
+
+                                                <div class="analysis-item">
+                                                    <span class="label">Rhyme Scheme</span>
+                                                    <span class="value">${data.rhyme_scheme}</span>
+                                                </div>
+
+                                                <div class="explanation-box">
+                                                    ${data.explanation}
+                                                </div>
             `;
 }
 
@@ -54,6 +80,21 @@ async function summarizeText() {
 
     const data = await res.json();
 document.getElementById("summaryResult").innerHTML = `
-${data.summary}
+                                        <div class="summary-title">
+                                            AI Generated Summary
+                                        </div>
+                                        <div class="analysis-item">
+                                            <span class="label">Original Length</span>
+                                            <span class="value">${text.length} chars</span>
+                                        </div>
+
+                                        <div class="analysis-item">
+                                            <span class="label">Summary Length</span>
+                                            <span class="value">${data.summary.length} chars</span>
+                                        </div>
+
+                                        <div class="explanation-box">
+                                            ${data.summary}
+                                        </div>
 `;
 }
